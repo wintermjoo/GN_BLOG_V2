@@ -14,6 +14,32 @@ import {
 import { getCurrentProfile } from "@/lib/supabase/profile";
 import { createClient } from "@/lib/supabase/server";
 import { decodeParam } from "@/lib/utils";
+import { JsonLd } from "@/components/json-ld";
+import { getPublicProfile } from "@/lib/public-data";
+import { absoluteUrl, SITE_NAME } from "@/lib/site";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ username: string }>;
+}): Promise<Metadata> {
+  const username = decodeParam((await params).username).toLowerCase();
+  const profile = await getPublicProfile(username);
+  if (!profile) return { title: "블로그를 찾을 수 없어요", robots: { index: false, follow: false } };
+
+  const title = `@${username}의 글`;
+  const description =
+    profile.bio || `익명 블로그 포갠의 @${username}님이 나눈 속마음 이야기를 읽어보세요.`;
+  const url = absoluteUrl(`/@${username}`);
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: { type: "profile", url, title, description, siteName: SITE_NAME, locale: "ko_KR" },
+    twitter: { card: "summary", title, description },
+  };
+}
 
 async function ProfileBody({
   params,
@@ -74,6 +100,19 @@ async function ProfileBody({
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col px-8 py-10">
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "ProfilePage",
+          url: absoluteUrl(path),
+          mainEntity: {
+            "@type": "Person",
+            name: `@${author.username}`,
+            url: absoluteUrl(path),
+            description: author.bio ?? undefined,
+          },
+        }}
+      />
       <header className="flex items-start gap-5 border-b border-zinc-200 pb-8 dark:border-zinc-800">
         <div className="flex flex-1 flex-col gap-2">
           <h1 className="text-2xl font-bold">@{author.username}</h1>

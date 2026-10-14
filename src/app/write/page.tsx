@@ -4,8 +4,8 @@ import { PostEditor } from "@/components/editor/post-editor";
 import { requireUser } from "@/lib/supabase/require-user";
 
 async function Editor() {
-  await requireUser();
-  return <PostEditor onSubmit={createPost} />;
+  const user = await requireUser();
+  return <PostEditor username={user.username} onSubmit={createPost} />;
 }
 
 export default function WritePage() {

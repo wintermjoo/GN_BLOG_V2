@@ -19,7 +19,9 @@ async function EditForm({
   const supabase = await createClient();
   const { data: post } = await supabase
     .from("posts")
-    .select("id, title, content, status")
+    .select(
+      "id, slug, title, content, status, seo_title, seo_description, tags, cover_image_url, cover_image_alt, indexable",
+    )
     .eq("author_id", user.id)
     .eq("slug", decodeParam(slug))
     .maybeSingle();
@@ -30,6 +32,17 @@ async function EditForm({
       <PostEditor
         initialTitle={post.title}
         initialContent={post.content as JSONContent}
+        username={user.username}
+        slugLocked={post.status === "published"}
+        initialMeta={{
+          seoTitle: post.seo_title ?? "",
+          seoDescription: post.seo_description ?? "",
+          slug: post.slug,
+          tags: post.tags ?? [],
+          coverImageUrl: post.cover_image_url,
+          coverImageAlt: post.cover_image_alt ?? "",
+          indexable: post.indexable,
+        }}
         onSubmit={updatePost.bind(null, post.id)}
         submitLabels={{ draft: "임시저장", published: post.status === "published" ? "수정 완료" : "발행" }}
       />

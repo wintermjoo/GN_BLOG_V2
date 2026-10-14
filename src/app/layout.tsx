@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Jua } from "next/font/google";
+import { Chatbot } from "@/components/chatbot";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -45,6 +46,14 @@ export const metadata: Metadata = {
     title: TITLE,
     description: DESCRIPTION,
   },
+  alternates: { types: { "application/rss+xml": "/feed.xml" } },
+  // Search Console / Naver Search Advisor ownership tokens (optional env vars).
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION,
+    other: process.env.NAVER_SITE_VERIFICATION
+      ? { "naver-site-verification": process.env.NAVER_SITE_VERIFICATION }
+      : undefined,
+  },
 };
 
 export const viewport: Viewport = {
@@ -57,7 +66,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="ko"
       className={`${geistSans.variable} ${geistMono.variable} ${jua.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+        <Chatbot />
+      </body>
     </html>
   );
 }

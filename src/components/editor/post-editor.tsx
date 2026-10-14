@@ -3,6 +3,7 @@
 import Placeholder from "@tiptap/extension-placeholder";
 import { EditorContent, useEditor, type Editor, type JSONContent } from "@tiptap/react";
 import { useRef, useState, useTransition } from "react";
+import { PublishPanel, type PostMetaInput } from "@/components/editor/publish-panel";
 import { baseExtensions } from "@/lib/editor/extensions";
 import { createClient } from "@/lib/supabase/client";
 
@@ -10,7 +11,24 @@ export type PostEditorSubmit = (input: {
   title: string;
   content: JSONContent;
   status: "draft" | "published";
+  seoTitle: string;
+  seoDescription: string;
+  slug: string;
+  tags: string[];
+  coverImageUrl: string | null;
+  coverImageAlt: string;
+  indexable: boolean;
 }) => Promise<{ error?: string } | void>;
+
+const EMPTY_META: PostMetaInput = {
+  seoTitle: "",
+  seoDescription: "",
+  slug: "",
+  tags: [],
+  coverImageUrl: null,
+  coverImageAlt: "",
+  indexable: true,
+};
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
@@ -67,15 +85,25 @@ function ToolbarButton({
 export function PostEditor({
   initialTitle = "",
   initialContent,
+  initialMeta,
+  username,
+  slugLocked = false,
   onSubmit,
   submitLabels = { draft: "임시저장", published: "발행" },
 }: {
   initialTitle?: string;
   initialContent?: JSONContent;
+  initialMeta?: PostMetaInput;
+  username: string;
+  slugLocked?: boolean;
   onSubmit: PostEditorSubmit;
   submitLabels?: { draft: string; published: string };
 }) {
   const [title, setTitle] = useState(initialTitle);
+  const [meta, setMeta] = useState<PostMetaInput>(initialMeta ?? EMPTY_META);
+  const [liveContent, setLiveContent] = useState<JSONContent>(
+    initialContent ?? { type: "doc", content: [] },
+  );
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -88,7 +116,9 @@ export function PostEditor({
     try {
       for (const file of files) {
         const src = await uploadImage(file);
-        editorRef.current?.chain().focus().setImage({ src }).run();
+        const alt =
+          window.prompt("이미지 설명(대체 텍스트)을 입력해 주세요. 검색·접근성에 도움이 돼요.", "") ?? "";
+        editorRef.current?.chain().focus().setImage({ src, alt: alt.trim() }).run();
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "이미지를 올리지 못했습니다.");
@@ -106,6 +136,10 @@ export function PostEditor({
     immediatelyRender: false,
     onCreate: ({ editor }) => {
       editorRef.current = editor;
+      setLiveContent(JSON.parse(JSON.stringify(editor.getJSON())));
+    },
+    onUpdate: ({ editor }) => {
+      setLiveContent(JSON.parse(JSON.stringify(editor.getJSON())));
     },
     editorProps: {
       attributes: {
@@ -158,7 +192,7 @@ export function PostEditor({
       // ProseMirror attrs are null-prototype objects, which React can't send to a Server Action
       // (they arrive as empty client references). Round-trip through JSON to get plain objects.
       const content: JSONContent = JSON.parse(JSON.stringify(editor.getJSON()));
-      const result = await onSubmit({ title, content, status });
+      const result = await onSubmit({ title, content, status, ...meta });
       if (result?.error) setError(result.error);
     });
   }
@@ -242,6 +276,15 @@ export function PostEditor({
         </div>
         <EditorContent editor={editor} />
       </div>
+
+      <PublishPanel
+        title={title}
+        content={liveContent}
+        meta={meta}
+        onChange={setMeta}
+        username={username}
+        slugLocked={slugLocked}
+      />
 
       {error && (
         <p role="alert" className="text-sm text-red-600">
