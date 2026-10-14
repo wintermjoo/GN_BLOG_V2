@@ -8,6 +8,7 @@ export async function GET(request: NextRequest) {
   // Only allow same-origin relative paths to prevent open redirects.
   const redirectPath = next.startsWith("/") && !next.startsWith("//") ? next : "/";
 
+  let reason: string;
   if (code) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
@@ -15,12 +16,17 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`${origin}${redirectPath}`);
     }
     console.error("[auth/callback] exchangeCodeForSession failed:", error.message);
+    reason = error.code ?? error.message;
   } else {
-    console.error(
-      "[auth/callback] missing code:",
-      searchParams.get("error_description") ?? searchParams.get("error"),
-    );
+    reason =
+      searchParams.get("error_code") ??
+      searchParams.get("error_description") ??
+      searchParams.get("error") ??
+      "missing_code";
+    console.error("[auth/callback] missing code:", reason);
   }
 
-  return NextResponse.redirect(`${origin}/auth/auth-code-error`);
+  const errorUrl = new URL("/auth/auth-code-error", origin);
+  errorUrl.searchParams.set("reason", reason);
+  return NextResponse.redirect(errorUrl);
 }

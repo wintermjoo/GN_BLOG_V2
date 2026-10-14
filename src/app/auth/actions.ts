@@ -16,7 +16,8 @@ export async function signInWithGoogle() {
   });
 
   if (error || !data.url) {
-    redirect("/auth/auth-code-error");
+    console.error("[auth/signInWithGoogle] failed:", error?.message);
+    redirect(`/auth/auth-code-error?reason=${encodeURIComponent(error?.code ?? "no_oauth_url")}`);
   }
 
   redirect(data.url);
