@@ -155,7 +155,10 @@ export function PostEditor({
       return;
     }
     startTransition(async () => {
-      const result = await onSubmit({ title, content: editor.getJSON(), status });
+      // ProseMirror attrs are null-prototype objects, which React can't send to a Server Action
+      // (they arrive as empty client references). Round-trip through JSON to get plain objects.
+      const content: JSONContent = JSON.parse(JSON.stringify(editor.getJSON()));
+      const result = await onSubmit({ title, content, status });
       if (result?.error) setError(result.error);
     });
   }
