@@ -1,19 +1,26 @@
 import { Suspense } from "react";
 import { AuthStatus } from "@/components/auth-status";
-import { LandingHero, LandingHeroFallback } from "@/components/landing-hero";
+import { Brand } from "@/components/brand";
+import { HomeFeed } from "@/components/home-feed";
 
-export default function Home() {
+export default function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string; page?: string }>;
+}) {
   return (
-    <div className="flex flex-1 flex-col bg-zinc-50 font-sans dark:bg-black">
+    <div className="flex flex-1 flex-col">
       <header className="flex h-16 w-full items-center justify-between px-8">
-        <span className="text-lg font-semibold">blog_v2</span>
+        <Brand />
         <Suspense>
           <AuthStatus />
         </Suspense>
       </header>
-      <main className="flex flex-1 items-center justify-center p-8">
-        <Suspense fallback={<LandingHeroFallback />}>
-          <LandingHero />
+      <main className="flex flex-1 flex-col">
+        <Suspense
+          fallback={<div className="mx-auto h-64 w-full max-w-3xl animate-pulse p-8" />}
+        >
+          <HomeFeed searchParams={searchParams} />
         </Suspense>
       </main>
     </div>
