@@ -13,17 +13,7 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      // New users have no username yet: send them to pick one first.
-      const { data: auth } = await supabase.auth.getClaims();
-      const { data: profile } = auth?.claims?.sub
-        ? await supabase
-            .from("profiles")
-            .select("username")
-            .eq("id", auth.claims.sub)
-            .maybeSingle()
-        : { data: null };
-      const target = profile?.username ? redirectPath : "/onboarding";
-      return NextResponse.redirect(`${origin}${target}`);
+      return NextResponse.redirect(`${origin}${redirectPath}`);
     }
     console.error("[auth/callback] exchangeCodeForSession failed:", error.message);
     reason = error.code ?? error.message;

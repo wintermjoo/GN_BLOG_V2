@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { addComment, deleteComment } from "@/app/posts/comment-actions";
 import type { Profile } from "@/lib/supabase/profile";
@@ -12,7 +11,7 @@ type CommentRow = {
   deleted_at: string | null;
   created_at: string;
   author_id: string;
-  author: { username: string | null; full_name: string | null; avatar_url: string | null } | null;
+  author: { username: string | null } | null;
 };
 
 function CommentForm({
@@ -68,18 +67,9 @@ function CommentItem({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-2 text-sm">
-        {!deleted && comment.author?.avatar_url && (
-          <Image
-            src={comment.author.avatar_url}
-            alt=""
-            width={24}
-            height={24}
-            className="rounded-full"
-          />
-        )}
         {!deleted && comment.author?.username ? (
           <Link href={`/@${comment.author.username}`} className="font-medium">
-            {comment.author.full_name ?? comment.author.username}
+            @{comment.author.username}
           </Link>
         ) : null}
         <span className="text-zinc-500">{formatDate(comment.created_at)}</span>
@@ -133,7 +123,7 @@ export async function Comments({
   const { data } = await supabase
     .from("comments")
     .select(
-      "id, parent_id, content, deleted_at, created_at, author_id, author:profiles!author_id(username, full_name, avatar_url)",
+      "id, parent_id, content, deleted_at, created_at, author_id, author:profiles!author_id(username)",
     )
     .eq("post_id", postId)
     .order("created_at", { ascending: true })

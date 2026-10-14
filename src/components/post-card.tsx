@@ -10,18 +10,8 @@ export function PostCard({ post }: { post: PostCardData }) {
   return (
     <article className="flex gap-4 border-b border-zinc-200 py-6 dark:border-zinc-800">
       <div className="flex min-w-0 flex-1 flex-col gap-2">
-        <Link href={`/@${username}`} className="flex items-center gap-2 text-sm">
-          {post.author?.avatar_url && (
-            <Image
-              src={post.author.avatar_url}
-              alt=""
-              width={20}
-              height={20}
-              className="rounded-full"
-            />
-          )}
-          <span className="font-medium">{post.author?.full_name ?? username}</span>
-          <span className="text-zinc-500">@{username}</span>
+        <Link href={`/@${username}`} className="text-sm font-medium">
+          @{username}
         </Link>
         <Link href={postPath(username, post.slug)} className="flex flex-col gap-1">
           <h2 className="truncate text-xl font-semibold">

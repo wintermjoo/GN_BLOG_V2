@@ -1,7 +1,7 @@
 export const PAGE_SIZE = 10;
 
 export const POST_CARD_SELECT =
-  "id, slug, title, excerpt, cover_image_url, status, published_at, created_at, view_count, like_count, comment_count, author:profiles!author_id(username, full_name, avatar_url)";
+  "id, slug, title, excerpt, cover_image_url, status, published_at, created_at, view_count, like_count, comment_count, author:profiles!author_id(username)";
 
 export type PostCardData = {
   id: string;
@@ -15,7 +15,7 @@ export type PostCardData = {
   view_count: number;
   like_count: number;
   comment_count: number;
-  author: { username: string | null; full_name: string | null; avatar_url: string | null } | null;
+  author: { username: string | null } | null;
 };
 
 export function parsePage(value: string | string[] | undefined): number {

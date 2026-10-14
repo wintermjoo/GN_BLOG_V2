@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -29,7 +28,7 @@ async function ProfileBody({
   const supabase = await createClient();
   const { data: author } = await supabase
     .from("profiles")
-    .select("id, username, full_name, avatar_url, bio")
+    .select("id, username, bio")
     .eq("username", username)
     .maybeSingle();
   if (!author) notFound();
@@ -76,18 +75,8 @@ async function ProfileBody({
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col px-8 py-10">
       <header className="flex items-start gap-5 border-b border-zinc-200 pb-8 dark:border-zinc-800">
-        {author.avatar_url && (
-          <Image
-            src={author.avatar_url}
-            alt=""
-            width={80}
-            height={80}
-            className="rounded-full"
-          />
-        )}
         <div className="flex flex-1 flex-col gap-2">
-          <h1 className="text-2xl font-bold">{author.full_name ?? author.username}</h1>
-          <p className="text-zinc-500">@{author.username}</p>
+          <h1 className="text-2xl font-bold">@{author.username}</h1>
           {author.bio && <p className="text-sm">{author.bio}</p>}
           <p className="text-sm text-zinc-500">
             팔로워 {followers.count ?? 0} · 팔로잉 {following.count ?? 0}

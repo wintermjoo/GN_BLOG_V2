@@ -10,7 +10,6 @@ const nextConfig: NextConfig = {
   partialPrefetching: true,
   images: {
     remotePatterns: [
-      new URL("https://lh3.googleusercontent.com/**"),
       ...(supabaseHost
         ? [
             new URL(

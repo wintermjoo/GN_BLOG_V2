@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { GoogleSignInButton } from "@/components/google-sign-in-button";
 import { Pager } from "@/components/pager";
 import { PostCard } from "@/components/post-card";
@@ -21,8 +20,6 @@ export async function HomeFeed({
   const sp = await searchParams;
   const page = parsePage(sp.page);
   const me = await getCurrentProfile();
-  if (me && !me.username) redirect("/onboarding");
-
   const tab = sp.tab === "following" && me ? "following" : "latest";
   const supabase = await createClient();
   const { from, to } = pageRange(page);

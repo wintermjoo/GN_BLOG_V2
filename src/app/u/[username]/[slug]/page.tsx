@@ -1,5 +1,4 @@
 import type { JSONContent } from "@tiptap/react";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -23,7 +22,7 @@ async function PostBody({
   const supabase = await createClient();
   const { data: author } = await supabase
     .from("profiles")
-    .select("id, username, full_name, avatar_url")
+    .select("id, username")
     .eq("username", username)
     .maybeSingle();
   if (!author?.username) notFound();
@@ -65,20 +64,8 @@ async function PostBody({
         )}
         <h1 className="text-4xl font-bold tracking-tight">{post.title}</h1>
         <div className="flex items-center justify-between text-sm text-zinc-500">
-          <Link href={`/@${author.username}`} className="flex items-center gap-2">
-            {author.avatar_url && (
-              <Image
-                src={author.avatar_url}
-                alt=""
-                width={28}
-                height={28}
-                className="rounded-full"
-              />
-            )}
-            <span className="font-medium text-foreground">
-              {author.full_name ?? author.username}
-            </span>
-            <span>@{author.username}</span>
+          <Link href={`/@${author.username}`} className="font-medium text-foreground">
+            @{author.username}
           </Link>
           <div className="flex items-center gap-3">
             <span>{formatDate(post.published_at ?? post.created_at)}</span>
